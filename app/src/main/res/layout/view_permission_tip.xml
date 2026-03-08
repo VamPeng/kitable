@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    PermissionTipView 内部布局（merge 避免多余层级）。
+    横条结构：左侧圆角按钮（去授权）+ 右侧提示文案（填满）。
+    高度固定 30dp，与上传进度条一致。
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp">
+
+        <!-- 左侧提示文案，填满剩余空间 -->
+        <TextView
+            android:id="@+id/tvPermissionMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- 右侧操作按钮，圆角白底，文字蓝色；由 applyConfig 控制显隐 -->
+        <TextView
+            android:id="@+id/tvPermissionAction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:textSize="11sp"
+            android:textColor="#1E88E5"
+            android:background="@drawable/bg_permission_tip_action"
+            android:text="去授权" />
+
+    </LinearLayout>
+
+</merge>

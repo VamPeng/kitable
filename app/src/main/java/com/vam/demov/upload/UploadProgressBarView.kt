@@ -54,7 +54,7 @@ class UploadProgressBarView @JvmOverloads constructor(
     }
 
     private var progressFraction: Float = 0f
-    private var cornerRadiusPx: Float = dpToPx(6f)
+    private var cornerRadiusPx: Float = 0f
 
     // -------------------------------------------------------------------------
     // 初始化：读取 XML 自定义属性

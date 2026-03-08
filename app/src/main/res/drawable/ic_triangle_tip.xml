@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 权限提示气泡指示三角形（上指），8dp × 8dp，蓝色 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="16dp"
+    android:viewportWidth="8"
+    android:viewportHeight="8">
+    <!-- M0,8 = 左下角  L4,0 = 顶部中心  L8,8 = 右下角 -->
+    <path
+        android:fillColor="#1E88E5"
+        android:pathData="M0,8 L4,0 L8,8 Z" />
+</vector>

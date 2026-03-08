@@ -131,6 +131,8 @@ assembleDebug 构建通过，实现了“可对外调用的上传进度 UI（Fra
 - Demo 页已提供“开始模拟上传 / 直接完成 / 关闭进度条（带动画开关）”验证流程
 - 已完成样式简化：进度条作为底层铺满父容器（`match_parent`），状态文案/缩略图/关闭按钮改为前景层覆盖在进度条之上
 - 已按 `TiltViewController` 风格补齐第三个工具核心注释：类注释、公开 API 注释、分区注释与关键逻辑说明
+- 已将上传进度动画插值器改为单一平滑 `easeInOut` 曲线，替换“前段线性、末段减速”效果，提升每次进度更新的连续性
+- 已将进度动画升级为“按帧追赶最新目标值”方案，避免 300ms 高频更新时反复重启动画；对单次 `+20` 等大步进也能保持自然平滑
 
 ### 第四个工具：CenterTabView（已完成）
 
@@ -165,6 +167,58 @@ assembleDebug 构建通过，实现了"居中选中 Tab 控件（平移动画 + 
 - 已按实现修正第四工具文档：等分槽位描述改为 `wrap_content` 实际布局；Demo 验证流程改为 2 tab + 4 按钮
 - 已修正 `CenterTabView Demo` 初始状态文案为“当前选中：[1] 照片”，与默认选中项一致
 - 已确认 `CLAUDE.md` 与 `AGENTS.md` 保持同步
+
+### 第五个工具：CameraPreviewActivity 集成 Demo（已完成）
+
+assembleDebug 构建通过，将前四个工具集成到水印相机预览界面，验证各组件协作效果。
+
+**新增文件：**
+- `app/src/main/java/com/vam/demov/camera/CameraPreviewActivity.kt` — 集成 Activity（Camera2 预览 + 四工具联动）
+- `app/src/main/java/com/vam/demov/camera/CameraEngine.kt` — Camera2 预览引擎（打开/关闭/切换前后摄/闪光灯）
+- `app/src/main/res/layout/activity_camera_preview.xml` — 预览界面布局（TopBar / 预览区 / BottomBar / FourCornerView / 上传条）
+- `app/src/main/res/layout/dialog_camera_gallery.xml` — 相册 Dialog 内容布局
+- 若干 drawable：`ic_arrow_back`、`ic_flash_on`、`ic_flash_off`、`ic_flip_camera`、`bg_capture_button`、`bg_gallery_button`
+
+**修改文件：**
+- `app/src/main/java/com/vam/demov/MainActivity.kt` — 新增第五个工具入口
+- `app/src/main/res/layout/activity_main.xml` — 新增入口按钮
+- `app/src/main/AndroidManifest.xml` — 注册 `CameraPreviewActivity`（LAUNCHER / portrait / NoActionBar）
+- `app/src/main/res/values/strings.xml` — 新增相机界面文案资源
+
+**集成关系（2026-03-08）：**
+- `TiltViewController`：绑定 `FourCornerView`，活动区取 `cameraPreviewContainer` 屏幕坐标；Gallery Dialog 弹出时 `stopListening()`，关闭后 `startListening()`
+- `DialogTopLiftController`：绑定 `FourCornerView`，附加 Gallery Dialog；弹出时 FourCornerView 上移对齐 Dialog 顶部，关闭后复位
+- `UploadProgressFragment`：挂载到 `uploadProgressContainer`，循环模拟进度（每 300ms 随机 +1..10，完成后短暂展示并自动隐藏）
+- `CenterTabView`：BottomBar 内"视频/拍照"Tab 切换，默认选中"拍照"（index 1）
+- `CameraPreviewActivity` 已将上传进度模拟步进改为随机值 `1..10`，避免固定增量导致观感过于机械
+
+### 第六个工具：PermissionTipView（已完成）
+
+assembleDebug 构建通过，实现"可独立复用的权限提示横条 View，与上传进度区域同位置、相互独立"功能。
+
+**新增文件：**
+- `app/src/main/java/com/vam/demov/permission/PermissionTipConfig.kt` — 配置数据类（背景色、文字色、操作按钮文案、动画时长）
+- `app/src/main/java/com/vam/demov/permission/PermissionTipView.kt` — 核心自定义 FrameLayout
+- `app/src/main/res/layout/view_permission_tip.xml` — View 内部布局（merge）
+
+**修改文件：**
+- `app/src/main/res/layout/activity_camera_preview.xml` — 新增 `permissionTipView`（与 `uploadProgressContainer` 同约束，独立叠放）
+- `app/src/main/java/com/vam/demov/camera/CameraPreviewActivity.kt` — 接入权限提示：权限缺失时显示、权限授予后隐藏、"去授权"按钮重新触发申请
+- `app/src/main/res/values/strings.xml` — 新增权限提示文案资源
+
+**设计要点（2026-03-08）：**
+- 继承 `FrameLayout`，内部 inflate `view_permission_tip.xml`（merge 标签，无多余层级）
+- 横条结构：左侧提示文案（`weight=1` 填满）+ 右侧操作按钮（`null` 时隐藏）
+- 动画：`showTip` 从下方滑入（`translationY: height→0`），`hideTip` 向下滑出（`translationY: 0→height`）；`post {}` 保证高度有效
+- 与 `uploadProgressContainer` 约束完全一致（`constraintTop_toTopOf="@id/bottomBar"`），两者各自独立显示/隐藏，互不影响
+- 不负责实际权限申请，操作按钮通过 `setOnActionClickListener` 回调交由调用方处理
+
+**对外 API（PermissionTipView）：**
+- `applyConfig(config)` — 设置背景色、文字色、操作按钮文案
+- `showTip(message, animate)` — 显示提示文案（已显示则仅更新文案）
+- `hideTip(animate)` — 隐藏提示条
+- `setOnActionClickListener(listener)` — 注册操作按钮回调
+- `isShowing()` — 当前是否显示
 
 ### 工程维护（已完成）
 

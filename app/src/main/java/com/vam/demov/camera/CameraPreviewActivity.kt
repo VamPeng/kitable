@@ -13,6 +13,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.TextureView
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -25,12 +26,15 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.doOnLayout
 import com.vam.demov.R
 import com.vam.demov.dialog.DialogTopLiftController
+import com.vam.demov.permission.PermissionTipConfig
+import com.vam.demov.permission.PermissionTipView
 import com.vam.demov.tab.CenterTabConfig
 import com.vam.demov.tab.CenterTabView
 import com.vam.demov.tilt.TiltViewController
 import com.vam.demov.upload.UploadProgressConfig
 import com.vam.demov.upload.UploadProgressFragment
 import com.vam.demov.view.FourCornerView
+import kotlin.random.Random
 
 /**
  * 水印相机预览界面
@@ -38,7 +42,9 @@ import com.vam.demov.view.FourCornerView
  * 当前阶段：Camera2 实时预览 + TopBar + BottomBar（Tab / 拍摄 / 弹框按钮）
  * 后续阶段：水印叠加、拍照、录视频、工具集成
  *
- * 权限：CAMERA + RECORD_AUDIO + 存储（按 API 版本区分）
+ * 权限：
+ *   - 相机权限（CAMERA + RECORD_AUDIO + 存储）：必须，缺失则 finish()
+ *   - 位置权限（ACCESS_FINE_LOCATION）：可选，缺失时由 PermissionTipView 提示
  */
 class CameraPreviewActivity : AppCompatActivity() {
 
@@ -70,27 +76,47 @@ class CameraPreviewActivity : AppCompatActivity() {
     private val progressHandler = Handler(Looper.getMainLooper())
     private var simProgress = 0
 
-    /** 权限通过后 Surface 可能还没就绪，用此标记待开启 */
+    // ---- PermissionTipView & 气泡三角形 ----
+    private lateinit var permissionTipView: PermissionTipView
+    private lateinit var triangleTip: View
+
+    /** 相机权限通过后 Surface 可能还没就绪，用此标记待开启 */
     private var permissionGranted = false
 
     // ---- 状态 ----
     private var isFlashOn = false
 
-    // ---- 权限申请 ----
+    // ---- 相机权限申请 ----
 
-    private val permissionLauncher = registerForActivityResult(
+    private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         val allGranted = results.all { it.value }
         if (allGranted) {
-            logI(content = "所有权限已授予")
+            logI(content = "相机权限已全部授予")
             permissionGranted = true
             openCameraIfReady()
         } else {
             val denied = results.filterValues { !it }.keys.joinToString()
-            logE(content = "权限被拒绝: $denied")
+            logE(content = "相机权限被拒绝: $denied")
             Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_LONG).show()
             finish()
+        }
+    }
+
+    // ---- 位置权限申请 ----
+
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            logI(content = "位置权限已授予")
+            permissionTipView.hideTip()
+            triangleTip.visibility = View.GONE
+        } else {
+            logE(content = "位置权限被拒绝")
+            permissionTipView.showTip(getString(R.string.permission_tip_location_denied))
+            // 三角形已可见，无需重复设置
         }
     }
 
@@ -114,7 +140,8 @@ class CameraPreviewActivity : AppCompatActivity() {
         initTiltController()
         initLiftController()
         initUploadProgress()
-        checkAndRequestPermissions()
+        initPermissionTip()
+        checkAndRequestCameraPermissions()
     }
 
     override fun onResume() {
@@ -123,6 +150,8 @@ class CameraPreviewActivity : AppCompatActivity() {
         if (permissionGranted && textureView.isAvailable) {
             cameraEngine.open(textureView)
         }
+        // 从系统设置返回时重新检查位置权限状态
+        checkLocationPermission()
     }
 
     override fun onPause() {
@@ -137,9 +166,9 @@ class CameraPreviewActivity : AppCompatActivity() {
         progressHandler.removeCallbacksAndMessages(null)
     }
 
-    // ---- 权限 ----
+    // ---- 相机权限 ----
 
-    private fun requiredPermissions(): Array<String> {
+    private fun requiredCameraPermissions(): Array<String> {
         val list = mutableListOf(
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
@@ -153,16 +182,38 @@ class CameraPreviewActivity : AppCompatActivity() {
         return list.toTypedArray()
     }
 
-    private fun checkAndRequestPermissions() {
-        val missing = requiredPermissions().filter {
+    private fun checkAndRequestCameraPermissions() {
+        val missing = requiredCameraPermissions().filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
         if (missing.isEmpty()) {
             permissionGranted = true
             openCameraIfReady()
         } else {
-            logI(content = "申请权限: ${missing.joinToString()}")
-            permissionLauncher.launch(missing.toTypedArray())
+            logI(content = "申请相机权限: ${missing.joinToString()}")
+            cameraPermissionLauncher.launch(missing.toTypedArray())
+        }
+    }
+
+    // ---- 位置权限 ----
+
+    /**
+     * 检查位置权限状态，并同步更新 PermissionTipView + 气泡三角形的显示/隐藏。
+     * 在 onCreate 和 onResume 中调用，确保从设置页返回后能及时刷新。
+     */
+    private fun checkLocationPermission() {
+        val granted = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (granted) {
+            permissionTipView.hideTip(animate = false)
+            triangleTip.visibility = View.GONE
+            logD(content = "位置权限已授予，隐藏提示条")
+        } else {
+            permissionTipView.showTip(getString(R.string.permission_tip_location), animate = false)
+            triangleTip.visibility = View.VISIBLE
+            logD(content = "位置权限未授予，显示提示条")
         }
     }
 
@@ -206,16 +257,13 @@ class CameraPreviewActivity : AppCompatActivity() {
         val dialog = buildGalleryDialog()
         galleryDialog = dialog
 
-        liftController
-            .setOnShowCallback {
-                tiltViewController.stopListening()
-                logD(content = "Gallery dialog shown, tilt paused")
-            }
-            .setOnDismissCallback {
-                tiltViewController.startListening()
-                logD(content = "Gallery dialog dismissed, tilt resumed")
-            }
-            .attachDialog(dialog)
+        liftController.setOnShowCallback {
+            tiltViewController.stopListening()
+            logD(content = "Gallery dialog shown, tilt paused")
+        }.setOnDismissCallback {
+            tiltViewController.startListening()
+            logD(content = "Gallery dialog dismissed, tilt resumed")
+        }.attachDialog(dialog)
     }
 
     private fun buildGalleryDialog(): Dialog {
@@ -239,8 +287,8 @@ class CameraPreviewActivity : AppCompatActivity() {
     // ---- UploadProgressFragment ----
 
     /**
-     * 挂载 UploadProgressFragment 到 uploadProgressContainer，启动循环进度模拟。
-     * 循环规则：每 500ms +10 进度（5s 跑完），完成后等待 10s 重新开始。
+     * 挂载 UploadProgressFragment 到 uploadProgressContainer。
+     * 初始状态隐藏，待实际上传任务触发时再显示。
      */
     private fun initUploadProgress() {
         uploadFragment = UploadProgressFragment.newInstance()
@@ -251,33 +299,38 @@ class CameraPreviewActivity : AppCompatActivity() {
             )
         )
         supportFragmentManager.beginTransaction()
-            .replace(R.id.uploadProgressContainer, uploadFragment)
-            .commitNow()
+            .replace(R.id.uploadProgressContainer, uploadFragment).commitNow()
 
-        startProgressCycle()
+        // 先隐藏，待实际上传任务触发时通过 resetAndShow() 显示
+        findViewById<View>(R.id.uploadProgressContainer).visibility = View.GONE
+        logD(content = "Upload progress initialized, hidden by default")
     }
 
     /** 从 0 开始新一轮进度模拟 */
     private fun startProgressCycle() {
         simProgress = 0
+        findViewById<View>(R.id.uploadProgressContainer).visibility = View.VISIBLE
         uploadFragment.resetAndShow(0)
         scheduleProgressStep()
         logD(content = "Upload progress cycle started")
     }
 
-    /** 每 500ms 推进一步（+10），到 100 后等 10s 重新开始 */
+    /** 每 300ms 随机推进一步（+1..10），到 100 后隐藏上传条 */
     private fun scheduleProgressStep() {
         progressHandler.postDelayed({
-            simProgress += 10
+            simProgress += Random.nextInt(1, 11)
             if (simProgress >= 100) {
                 uploadFragment.markUploadCompleted()
                 logD(content = "Upload completed, next cycle in 10s")
-                progressHandler.postDelayed({ startProgressCycle() }, 10_000L)
+
+                progressHandler.postDelayed({
+                    findViewById<View>(R.id.uploadProgressContainer).visibility = View.GONE
+                }, 1_000L)
             } else {
                 uploadFragment.updateProgress(simProgress)
                 scheduleProgressStep()
             }
-        }, 500L)
+        }, 300L)
     }
 
     // ---- TiltViewController ----
@@ -293,15 +346,45 @@ class CameraPreviewActivity : AppCompatActivity() {
         previewContainer.doOnLayout {
             val loc = IntArray(2)
             previewContainer.getLocationOnScreen(loc)
+            // FourCornerView 的 marginBottom = 12dp，boundary.bottom 同步上移相同距离，
+            // 确保 STATE_D / STATE_B 的对齐目标与 View 布局初始位置一致。
+            val marginBottomPx = (16f * resources.displayMetrics.density)
             val boundary = RectF(
                 loc[0].toFloat(),
                 loc[1].toFloat(),
                 (loc[0] + previewContainer.width).toFloat(),
-                (loc[1] + previewContainer.height).toFloat()
+                (loc[1] + previewContainer.height).toFloat() - marginBottomPx
             )
             logI(content = "TiltViewController boundary: $boundary")
             tiltViewController.bind(fourCornerView, boundary)
         }
+    }
+
+    // ---- PermissionTipView ----
+
+    /**
+     * 初始化位置权限提示条：绑定 View、设置蓝色样式、注册"去授权"回调。
+     * 实际显示/隐藏由 [checkLocationPermission] 驱动（onCreate + onResume）。
+     */
+    private fun initPermissionTip() {
+        permissionTipView = findViewById(R.id.permissionTipView)
+        triangleTip = findViewById(R.id.triangleTip)
+        permissionTipView.applyConfig(
+            PermissionTipConfig(
+                backgroundColor = 0xFF1E88E5.toInt(),
+                textColor = 0xFFFFFFFF.toInt(),
+                actionText = getString(R.string.permission_tip_action),
+                actionTextColor = 0xFF1E88E5.toInt(),
+                animDurationMs = 250L,
+            )
+        )
+        // 点击"去授权"：发起位置权限申请
+        permissionTipView.setOnActionClickListener {
+            logD(content = "PermissionTip action clicked, requesting location permission")
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        // 初始检查（onResume 也会再次检查）
+        checkLocationPermission()
     }
 
     // ---- TopBar ----
@@ -333,6 +416,7 @@ class CameraPreviewActivity : AppCompatActivity() {
     private fun initBottomBar() {
         findViewById<ImageButton>(R.id.btnCapture).setOnClickListener {
             logD(content = "btnCapture clicked")
+            startProgressCycle()
             // TODO: 拍照
         }
 
@@ -357,6 +441,5 @@ class CameraPreviewActivity : AppCompatActivity() {
         centerTabView.setOnTabSelectedListener { index, label ->
             logD(content = "Tab: [$index] $label")
         }
-
     }
 }

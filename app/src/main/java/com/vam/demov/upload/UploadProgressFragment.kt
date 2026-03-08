@@ -1,10 +1,8 @@
 package com.vam.demov.upload
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +12,7 @@ import androidx.annotation.DrawableRes
 import androidx.fragment.app.Fragment
 import com.vam.demov.R
 import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.math.roundToInt
 
 /**
@@ -69,11 +68,20 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
     // 运行时状态
     // -------------------------------------------------------------------------
 
-    private var progressAnimator: ValueAnimator? = null
-
+    /** 当前已绘制到进度条上的进度（0f..1f）。 */
     private var currentProgress: Float = 0f
+
+    /** 外部最新要求到达的目标进度（0f..1f）。 */
+    private var targetProgress: Float = 0f
+
     private var isClosed: Boolean = false
     private var isCompleted: Boolean = false
+
+    /** 是否已启动按帧平滑追赶任务。 */
+    private var isProgressSmoothingRunning: Boolean = false
+
+    /** 上一帧时间戳，用于按真实帧间隔计算追赶速度。 */
+    private var lastProgressFrameTimeMs: Long = 0L
 
     // -------------------------------------------------------------------------
     // 延迟应用参数（View 尚未创建时暂存）
@@ -89,6 +97,36 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
 
     private var onCloseClickListener: (() -> Unit)? = null
     private var onThumbnailClickListener: (() -> Unit)? = null
+
+    /** 按帧平滑追赶进度的任务。 */
+    private val progressFrameRunnable = object : Runnable {
+        override fun run() {
+            val bar = progressView ?: run {
+                stopProgressSmoothing()
+                return
+            }
+
+            val now = SystemClock.uptimeMillis()
+            val deltaMs = if (lastProgressFrameTimeMs == 0L) 16L else (now - lastProgressFrameTimeMs).coerceAtLeast(1L)
+            lastProgressFrameTimeMs = now
+
+            val distance = targetProgress - currentProgress
+            if (abs(distance) <= 0.002f) {
+                currentProgress = targetProgress
+                bar.setProgressFraction(currentProgress)
+                applyStatusByProgress(currentProgress)
+                stopProgressSmoothing()
+                return
+            }
+
+            // 指数逼近：更新越频繁越不会反复“重启动画”，大步进时也会自然加速追赶。
+            val blend = 1f - exp(-deltaMs / 110f)
+            currentProgress += distance * blend
+            bar.setProgressFraction(currentProgress)
+            applyStatusByProgress(currentProgress)
+            bar.postOnAnimation(this)
+        }
+    }
 
     // -------------------------------------------------------------------------
     // 公开 API
@@ -126,7 +164,7 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
 
         ensurePanelVisibleIfNeeded()
         val targetFraction = clampedPercent / 100f
-        animateProgressTo(targetFraction, animate)
+        updateDisplayedProgress(targetFraction, animate)
     }
 
     /**
@@ -148,7 +186,7 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
             return
         }
         isClosed = true
-        progressAnimator?.cancel()
+        stopProgressSmoothing()
 
         val root = panelRoot ?: return
         if (enableAnimation) {
@@ -182,7 +220,7 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
         val clampedPercent = initialPercent.coerceIn(0, 100)
         isClosed = false
         isCompleted = false
-        progressAnimator?.cancel()
+        stopProgressSmoothing()
 
         val root = panelRoot
         if (root != null) {
@@ -197,6 +235,7 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
         }
 
         currentProgress = clampedPercent / 100f
+        targetProgress = currentProgress
         progressView?.setProgressFraction(currentProgress)
         applyStatusByProgress(currentProgress)
     }
@@ -277,8 +316,7 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
     }
 
     override fun onDestroyView() {
-        progressAnimator?.cancel()
-        progressAnimator = null
+        stopProgressSmoothing()
         panelRoot = null
         tvStatus = null
         progressView = null
@@ -323,53 +361,34 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
 
         bar.setTrackColor(config.progressTrackColor)
         bar.setProgressColor(config.progressFillColor)
-        bar.setCornerRadiusPx(dpToPx(config.progressCornerRadiusDp))
+        bar.setCornerRadiusPx(dpToPx(0f))
     }
 
     /**
-     * 将进度从当前值动画到目标值。
+     * 更新显示进度。
      *
-     * @param targetFraction 目标进度（0f..1f）
-     * @param animate 是否启用动画
+     * 与传统“每次都 cancel + restart animator”不同，这里采用“目标值追赶”：
+     * - `targetProgress` 始终保存最新目标值
+     * - `currentProgress` 按帧持续逼近目标
+     *
+     * 这样在 300ms 一次更新、甚至一次直接 +20 的场景下，也不会出现反复起步的顿挫感。
      */
-    private fun animateProgressTo(targetFraction: Float, animate: Boolean) {
+    private fun updateDisplayedProgress(targetFraction: Float, animate: Boolean) {
         val bar = progressView ?: return
-
-        progressAnimator?.cancel()
 
         val from = currentProgress.coerceIn(0f, 1f)
         val to = targetFraction.coerceIn(0f, 1f)
+        targetProgress = to
 
         if (!animate || from == to) {
             currentProgress = to
             bar.setProgressFraction(to)
             applyStatusByProgress(to)
+            stopProgressSmoothing()
             return
         }
 
-        val duration = computeDuration(from, to)
-        progressAnimator = ValueAnimator.ofFloat(from, to).apply {
-            this.duration = duration
-            addUpdateListener { animator ->
-                val value = animator.animatedValue as Float
-                currentProgress = value
-                bar.setProgressFraction(value)
-            }
-            addListener(object : AnimatorListenerAdapter() {
-                private var cancelled = false
-
-                override fun onAnimationCancel(animation: Animator) {
-                    cancelled = true
-                }
-
-                override fun onAnimationEnd(animation: Animator) {
-                    if (cancelled) return
-                    currentProgress = to
-                    applyStatusByProgress(to)
-                }
-            })
-            start()
-        }
+        startProgressSmoothing()
     }
 
     /** 根据进度同步状态文案与缩略图显示。 */
@@ -400,11 +419,21 @@ class UploadProgressFragment : Fragment(R.layout.fragment_upload_progress) {
         root.translationY = 0f
     }
 
-    /** 按进度跨度比例计算动画时长，并保证最小时长避免闪动。 */
-    private fun computeDuration(from: Float, to: Float): Long {
-        val fraction = abs(to - from).coerceIn(0f, 1f)
-        val scaled = (config.progressAnimationDurationMs * fraction).roundToInt().toLong()
-        return scaled.coerceAtLeast(120L)
+    /** 启动按帧追赶任务；若已在运行则仅更新时间戳，避免重复 post。 */
+    private fun startProgressSmoothing() {
+        val bar = progressView ?: return
+        if (isProgressSmoothingRunning) return
+        isProgressSmoothingRunning = true
+        lastProgressFrameTimeMs = 0L
+        bar.removeCallbacks(progressFrameRunnable)
+        bar.postOnAnimation(progressFrameRunnable)
+    }
+
+    /** 停止按帧追赶任务。 */
+    private fun stopProgressSmoothing() {
+        isProgressSmoothingRunning = false
+        lastProgressFrameTimeMs = 0L
+        progressView?.removeCallbacks(progressFrameRunnable)
     }
 
     // -------------------------------------------------------------------------

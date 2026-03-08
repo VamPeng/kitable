@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "去授权" 操作按钮背景：白色圆角矩形，叠在蓝色提示条上 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFF" />
+    <corners android:radius="4dp" />
+</shape>

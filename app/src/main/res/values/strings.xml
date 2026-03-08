@@ -53,4 +53,9 @@
     <string name="center_tab_demo_status_init">当前选中：[1] 照片</string>
     <string name="center_tab_demo_prev">上一个</string>
     <string name="center_tab_demo_next">下一个</string>
+
+    <!-- 权限提示条（PermissionTipView）— 位置权限 -->
+    <string name="permission_tip_location">需要获取您的位置信息</string>
+    <string name="permission_tip_location_denied">位置权限已被拒绝，请前往设置开启</string>
+    <string name="permission_tip_action">去授权</string>
 </resources>
