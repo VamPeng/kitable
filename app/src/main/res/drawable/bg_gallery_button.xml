@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 弹框/相册按钮：灰色实心圆 + 深灰描边，白色背景上清晰可见 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#9E9E9E" />
+        </shape>
+    </item>
+    <item
+        android:left="2dp"
+        android:top="2dp"
+        android:right="2dp"
+        android:bottom="2dp">
+        <shape android:shape="oval">
+            <solid android:color="#E0E0E0" />
+        </shape>
+    </item>
+</layer-list>

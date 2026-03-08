@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- FourCornerView 自定义属性 -->
+    <declare-styleable name="FourCornerView">
+        <!-- View 宽度（dp），默认 120dp -->
+        <attr name="fcv_width" format="dimension" />
+        <!-- View 高度（dp），默认 80dp -->
+        <attr name="fcv_height" format="dimension" />
+    </declare-styleable>
+
+    <!-- UploadProgressBarView 自定义属性 -->
+    <declare-styleable name="UploadProgressBarView">
+        <!-- 进度条底色 -->
+        <attr name="upv_trackColor" format="color" />
+        <!-- 进度条前景色 -->
+        <attr name="upv_progressColor" format="color" />
+        <!-- 圆角半径 -->
+        <attr name="upv_cornerRadius" format="dimension" />
+    </declare-styleable>
+
+    <!-- CenterTabView 自定义属性（暂无 XML 属性，配置通过 applyConfig() API 传入） -->
+    <declare-styleable name="CenterTabView">
+    </declare-styleable>
+
+</resources>

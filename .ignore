@@ -1,0 +1,9 @@
+# Search ignore rules for ripgrep/Codex in non-git workspace.
+# Keep search focused on source files and docs.
+**/build/**
+.gradle/**
+.idea/**
+.kotlin/**
+.cxx/**
+.externalNativeBuild/**
+captures/**

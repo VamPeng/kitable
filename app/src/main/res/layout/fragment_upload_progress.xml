@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/uploadPanelRoot"
+    android:layout_width="match_parent"
+    android:layout_height="30dp">
+
+    <!-- 底层进度条：始终与父布局同宽同高 -->
+    <com.vam.demov.upload.UploadProgressBarView
+        android:id="@+id/uploadProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 前景信息层：覆盖在进度条之上 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="8dp">
+
+        <TextView
+            android:id="@+id/tvUploadStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@string/upload_progress_status_uploading"
+            android:textColor="#1E2A38"
+            android:textSize="11sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/ivUploadThumbnail"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@string/upload_progress_thumb_desc"
+            android:scaleType="centerCrop"
+            android:src="@drawable/bg_upload_thumb_placeholder"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/ivUploadClose"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_upload_close_button"
+            android:contentDescription="@string/upload_progress_close_desc"
+            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:tint="#445267" />
+
+    </LinearLayout>
+
+</FrameLayout>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#F3F6FA">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/upload_progress_demo_title"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#1E2A38" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/upload_progress_demo_desc"
+        android:textSize="13sp"
+        android:textColor="#536171" />
+
+    <FrameLayout
+        android:id="@+id/uploadProgressFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp" />
+
+    <TextView
+        android:id="@+id/tvUploadDemoState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textSize="13sp"
+        android:textColor="#2B3A4A"
+        android:text="@string/upload_progress_demo_state_idle" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnUploadStart"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/upload_progress_demo_btn_start"
+            android:backgroundTint="#1976D2" />
+
+        <Button
+            android:id="@+id/btnUploadComplete"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="@string/upload_progress_demo_btn_complete"
+            android:backgroundTint="#2E7D32" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnUploadClose"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/upload_progress_demo_btn_close"
+            android:backgroundTint="#8D6E63" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swUploadCloseAnim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:checked="true"
+            android:text="@string/upload_progress_demo_close_anim_switch"
+            android:textColor="#304255"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    底部弹出 Dialog 内容布局
+    - 高度自适应（wrap_content），由内部内容决定
+    - 目标 View 位于页面布局中，与 Dialog 无关；Dialog 仅提供高度参考
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_panel"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingTop="20dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="32dp">
+
+    <!-- 把手条 -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="#BDBDBD" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_top_lift_content_title"
+        android:textColor="#1F1F1F"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/dialog_top_lift_content_desc"
+        android:textColor="#757575"
+        android:textSize="13sp" />
+
+    <!-- 示意内容区，模拟真实 Dialog 有内容撑高度 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:layout_marginTop="16dp"
+        android:background="#F5F5F5" />
+
+</LinearLayout>

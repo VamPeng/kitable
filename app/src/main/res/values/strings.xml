@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">DemoV</string>
+    <string name="demo_list_title">DemoV 功能列表</string>
+    <string name="demo_tilt_entry">TiltViewController — 重力感应 View 变换</string>
+    <string name="demo_dialog_top_lift_entry">DialogTopLiftController — Dialog 弹出驱动页面 View 上移</string>
+    <string name="demo_upload_progress_entry">UploadProgressFragment — 上传进度条 UI</string>
+
+    <string name="dialog_top_lift_page_title">DialogTopLiftController Demo</string>
+    <string name="dialog_top_lift_page_desc">点击按钮后，Dialog 从底部弹出；Controller 获取 Dialog 高度，驱动活动区内的 FourCornerView 向上平移等量距离；Dialog 关闭后自动复位。</string>
+    <string name="dialog_top_lift_show_dialog">弹出 Dialog</string>
+    <string name="dialog_top_lift_status_idle">状态：等待触发</string>
+    <string name="dialog_top_lift_status_shown">状态：Dialog 已弹出，目标 View 上移中</string>
+    <string name="dialog_top_lift_status_dismiss">状态：Dialog 已关闭，目标 View 复位中</string>
+    <string name="dialog_top_lift_status_bind_failed">状态：控件绑定失败，请检查布局</string>
+
+    <string name="dialog_top_lift_content_title">底部弹出 Dialog</string>
+    <string name="dialog_top_lift_content_desc">Dialog 弹出后，页面中的目标 View 会随之向上平移 Dialog 的高度。</string>
+
+    <string name="upload_progress_demo_title">上传进度 Fragment Demo</string>
+    <string name="upload_progress_demo_desc">通过 Fragment 对外暴露 API，支持进度动画更新、关闭禁用更新、完成态缩略图点击回调。</string>
+    <string name="upload_progress_demo_btn_start">开始模拟上传</string>
+    <string name="upload_progress_demo_btn_complete">直接完成</string>
+    <string name="upload_progress_demo_btn_close">关闭进度条</string>
+    <string name="upload_progress_demo_close_anim_switch">关闭时启用动画</string>
+
+    <string name="upload_progress_status_uploading">上传中</string>
+    <string name="upload_progress_status_done">上传完成</string>
+    <string name="upload_progress_close_desc">关闭上传进度</string>
+    <string name="upload_progress_thumb_desc">上传完成缩略图</string>
+
+    <string name="upload_progress_demo_state_idle">状态：等待上传</string>
+    <string name="upload_progress_demo_state_uploading">状态：上传中（模拟进度更新）</string>
+    <string name="upload_progress_demo_state_complete">状态：上传完成</string>
+    <string name="upload_progress_demo_state_closed">状态：已关闭（后续进度更新将被忽略）</string>
+    <string name="upload_progress_demo_state_thumb_click">状态：点击了上传完成缩略图</string>
+
+    <string name="demo_center_tab_entry">CenterTabView — 居中选中 Tab</string>
+
+    <!-- 相机预览界面入口 -->
+    <string name="demo_camera_preview_entry">水印相机预览界面（综合 Demo）</string>
+
+    <!-- 相机预览界面内容 -->
+    <string name="camera_title">水印相机</string>
+    <string name="camera_permission_denied">需要相机权限，请在设置中授权后重试</string>
+    <string name="camera_back_desc">返回</string>
+    <string name="camera_gallery_dialog_title">相册</string>
+    <string name="camera_capture_desc">拍摄</string>
+    <string name="camera_gallery_desc">相册</string>
+    <string name="camera_flash_desc">闪光灯</string>
+    <string name="camera_flip_desc">翻转镜头</string>
+    <string name="center_tab_demo_title">CenterTabView Demo</string>
+    <string name="center_tab_demo_desc">选中 tab 始终居于控件中央，切换时执行整体平移动画，并切换字重与底部圆点指示器。</string>
+    <string name="center_tab_demo_status_init">当前选中：[1] 照片</string>
+    <string name="center_tab_demo_prev">上一个</string>
+    <string name="center_tab_demo_next">下一个</string>
+</resources>

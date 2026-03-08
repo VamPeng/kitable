@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- ================================================================
+         TopBar：白色背景，与系统状态栏视觉融合
+         左：回退  中：水印相机  右：闪光灯 + 镜头翻转
+         ================================================================ -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="#FFFFFF"
+        android:paddingStart="4dp"
+        android:paddingEnd="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 左：回退按钮 -->
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/camera_back_desc"
+            android:src="@drawable/ic_arrow_back"
+            android:scaleType="center"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- 中：水印相机标题 -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/camera_title"
+            android:textColor="#212121"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.02"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- 右：闪光灯 + 镜头翻转 -->
+        <LinearLayout
+            android:id="@+id/rightActions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageButton
+                android:id="@+id/btnFlash"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/camera_flash_desc"
+                android:src="@drawable/ic_flash_off"
+                android:scaleType="center" />
+
+            <ImageButton
+                android:id="@+id/btnFlipCamera"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/camera_flip_desc"
+                android:src="@drawable/ic_flip_camera"
+                android:scaleType="center" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- ================================================================
+         相机预览容器：紧靠 TopBar，宽铺满，高 = 宽 × 4/3（height:width = 4:3）
+         后续接入 TextureView / Camera2
+         ================================================================ -->
+    <FrameLayout
+        android:id="@+id/cameraPreviewContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#000000"
+        app:layout_constraintDimensionRatio="H,3:4"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextureView
+            android:id="@+id/textureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+    <!-- ================================================================
+         BottomBar：预览区以下到屏幕底部，黑色背景
+         ================================================================ -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/cameraPreviewContainer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 拍摄按钮：80dp 圆形，水平居中，距 BottomBar 顶部 32dp -->
+        <ImageButton
+            android:id="@+id/btnCapture"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/bg_capture_button"
+            android:contentDescription="@string/camera_capture_desc"
+            android:scaleType="center"
+            android:src="@null"
+            android:layout_marginTop="52dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 弹框按钮：43dp，与拍摄按钮垂直居中，水平居于拍摄按钮右侧到父布局右边中心 -->
+        <ImageButton
+            android:id="@+id/btnGallery"
+            android:layout_width="43dp"
+            android:layout_height="43dp"
+            android:background="@drawable/bg_gallery_button"
+            android:contentDescription="@string/camera_gallery_desc"
+            android:scaleType="center"
+            android:src="@null"
+            app:layout_constraintStart_toEndOf="@id/btnCapture"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/btnCapture"
+            app:layout_constraintBottom_toBottomOf="@id/btnCapture" />
+
+        <!-- CenterTabView：视频 / 拍照 Tab，位于拍摄按钮下方 -->
+        <com.vam.demov.tab.CenterTabView
+            android:id="@+id/centerTabView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/btnCapture"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- UploadProgressFragment 容器：top/start 对齐 bottomBar，不放在 bottomBar 内部 -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/uploadProgressContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/bottomBar"
+        app:layout_constraintStart_toStartOf="@id/bottomBar"
+        app:layout_constraintEnd_toEndOf="@id/bottomBar" />
+
+    <!-- FourCornerView：叠加在预览区左下角，父布局为根 ConstraintLayout -->
+    <com.vam.demov.view.FourCornerView
+        android:id="@+id/fourCornerView"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        app:layout_constraintStart_toStartOf="@id/cameraPreviewContainer"
+        app:layout_constraintBottom_toBottomOf="@id/cameraPreviewContainer" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

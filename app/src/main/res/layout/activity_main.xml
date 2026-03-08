@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#F5F5F5">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/demo_list_title"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="16dp" />
+
+    <!-- TiltViewController 调试入口 -->
+    <Button
+        android:id="@+id/btnTiltDemo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/demo_tilt_entry"
+        android:textSize="14sp"
+        android:backgroundTint="#1976D2"
+        android:layout_marginBottom="12dp" />
+
+    <!-- DialogTopLiftController 调试入口 -->
+    <Button
+        android:id="@+id/btnDialogTopLiftDemo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/demo_dialog_top_lift_entry"
+        android:textSize="14sp"
+        android:backgroundTint="#00897B"
+        android:layout_marginBottom="12dp" />
+
+    <!-- UploadProgressFragment 调试入口 -->
+    <Button
+        android:id="@+id/btnUploadProgressDemo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/demo_upload_progress_entry"
+        android:textSize="14sp"
+        android:backgroundTint="#5D6D7E"
+        android:layout_marginBottom="12dp" />
+
+    <!-- CenterTabView 调试入口 -->
+    <Button
+        android:id="@+id/btnCenterTabDemo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/demo_center_tab_entry"
+        android:textSize="14sp"
+        android:backgroundTint="#7B1FA2"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 水印相机预览界面（综合 Demo） -->
+    <Button
+        android:id="@+id/btnCameraPreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/demo_camera_preview_entry"
+        android:textSize="14sp"
+        android:backgroundTint="#E64A19" />
+
+</LinearLayout>

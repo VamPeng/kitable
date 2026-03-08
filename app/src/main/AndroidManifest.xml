@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 相机 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 录音（录视频） -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- 读取媒体文件：API 33+ 分类权限 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <!-- 读取外部存储：API 24-32，API 33+ 自动忽略 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <!-- 写入外部存储：API 24-28；API 29+ 使用 MediaStore 无需此权限 -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <!-- 震动反馈（普通权限，声明即授予） -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- 硬件特性声明 -->
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.DemoV">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.DemoV">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".TiltDemoActivity"
+            android:exported="false"
+            android:label="TiltViewController Demo"
+            android:theme="@style/Theme.DemoV" />
+
+        <activity
+            android:name=".DialogTopLiftDemoActivity"
+            android:exported="false"
+            android:label="DialogTopLiftController Demo"
+            android:theme="@style/Theme.DemoV" />
+
+        <activity
+            android:name=".UploadProgressDemoActivity"
+            android:exported="false"
+            android:label="UploadProgressFragment Demo"
+            android:theme="@style/Theme.DemoV" />
+
+        <activity
+            android:name=".CenterTabDemoActivity"
+            android:exported="false"
+            android:label="CenterTabView Demo"
+            android:theme="@style/Theme.DemoV" />
+
+        <activity
+            android:name=".camera.CameraPreviewActivity"
+            android:exported="true"
+            android:label="水印相机"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
